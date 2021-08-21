@@ -15,7 +15,7 @@ contract Refund is Ownable {
   IERC20[] public tokens;
 
   event Claimed(address claimer, uint256 tokenIdx, uint256 amount);
-  event Rescued(uint256 tokenIdx, uint256 amount);
+  event Rescued(address token, uint256 amount);
 
   constructor(IERC20 _stakingToken, IERC20[] memory _tokens) {
     stakingToken = _stakingToken;
@@ -33,12 +33,9 @@ contract Refund is Ownable {
     claimed[msg.sender] = true;
   }
 
-  function rescueTokens() onlyOwner external {
-    for (uint i = 0; i < tokens.length; i++) {
-      IERC20 token = tokens[i];
-      uint256 balance = token.balanceOf(address(this));
-      token.safeTransfer(msg.sender, balance);
-      emit Rescued(i, balance);
-    }
+  function rescueTokens(IERC20 token) onlyOwner external {
+    uint256 balance = token.balanceOf(address(this));
+    token.safeTransfer(msg.sender, balance);
+    emit Rescued(address(token), balance);
   }
 }

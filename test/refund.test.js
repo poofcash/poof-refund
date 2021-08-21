@@ -47,11 +47,13 @@ contract("Refund", (accounts) => {
   describe("#rescueTokens", () => {
     it("should claim any remaining tokens", async () => {
       const token0BalanceBefore = await token0.balanceOf(owner);
-      const token1BalanceBefore = await token1.balanceOf(owner);
-      await contract.rescueTokens();
+      await contract.rescueTokens(token0.address);
       const token0BalanceAfter = await token0.balanceOf(owner);
-      const token1BalanceAfter = await token1.balanceOf(owner);
       token0BalanceAfter.sub(token0BalanceBefore).should.eq.BN(90); // 90% of supply
+
+      const token1BalanceBefore = await token1.balanceOf(owner);
+      await contract.rescueTokens(token1.address);
+      const token1BalanceAfter = await token1.balanceOf(owner);
       token1BalanceAfter.sub(token1BalanceBefore).should.eq.BN(90); // 90% of supply
     });
   });
