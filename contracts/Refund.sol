@@ -10,6 +10,7 @@ contract Refund is Ownable {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
+  uint256 public immutable MAX_TOKENS = 2;
   mapping(address => bool) public claimed;
   IERC20 public stakingToken;
   IERC20[] public tokens;
@@ -18,6 +19,7 @@ contract Refund is Ownable {
   event Rescued(address token, uint256 amount);
 
   constructor(IERC20 _stakingToken, IERC20[] memory _tokens) {
+    require(_tokens.length <= 2, "Exceeded max allowed tokens");
     stakingToken = _stakingToken;
     tokens = _tokens;
   }
