@@ -24,13 +24,20 @@ contract Refund is Ownable {
     refundToken = _refundToken;
   }
 
-  function claim() external {
+  function claim() public {
     require(!claimed[msg.sender], "Caller has already claimed");
-    uint256 refund = refundToken.balanceOf(address(this)).add(totalClaimed).mul(stakingToken.balanceOf(msg.sender)).div(stakingToken.totalSupply());
+    uint256 refund = refundAmount(msg.sender);
     refundToken.safeTransfer(msg.sender, refund);
     emit Claimed(msg.sender, refund);
     totalClaimed += refund;
     claimed[msg.sender] = true;
+  }
+
+  function refundAmount(address owner) public view returns (uint256) {
+    if (claimed[owner]) {
+      return 0;
+    }
+    return refundToken.balanceOf(address(this)).add(totalClaimed).mul(stakingToken.balanceOf(owner)).div(stakingToken.totalSupply());
   }
 
   function rescueTokens(IERC20 token) onlyOwner external {
