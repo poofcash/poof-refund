@@ -13,25 +13,23 @@ contract Refund is Ownable {
   uint256 public immutable MAX_TOKENS = 2;
   mapping(address => bool) public claimed;
   IERC20 public stakingToken;
-  IERC20[] public tokens;
+  IERC20 public refundToken;
+  uint256 public totalClaimed;
 
-  event Claimed(address claimer, uint256 tokenIdx, uint256 amount);
+  event Claimed(address claimer, uint256 amount);
   event Rescued(address token, uint256 amount);
 
-  constructor(IERC20 _stakingToken, IERC20[] memory _tokens) {
-    require(_tokens.length <= 2, "Exceeded max allowed tokens");
+  constructor(IERC20 _stakingToken, IERC20 _refundToken) {
     stakingToken = _stakingToken;
-    tokens = _tokens;
+    refundToken = _refundToken;
   }
 
   function claim() external {
     require(!claimed[msg.sender], "Caller has already claimed");
-    for (uint i = 0; i < tokens.length; i++) {
-      IERC20 token = tokens[i];
-      uint256 refund = token.balanceOf(address(this)).mul(stakingToken.balanceOf(msg.sender)).div(stakingToken.totalSupply());
-      token.safeTransfer(msg.sender, refund);
-      emit Claimed(msg.sender, i, refund);
-    }
+    uint256 refund = refundToken.balanceOf(address(this)).add(totalClaimed).mul(stakingToken.balanceOf(msg.sender)).div(stakingToken.totalSupply());
+    refundToken.safeTransfer(msg.sender, refund);
+    emit Claimed(msg.sender, refund);
+    totalClaimed += refund;
     claimed[msg.sender] = true;
   }
 
